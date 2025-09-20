@@ -16,3 +16,10 @@ To compile the program using `make` follow the steps listed below:
 2. Type ```make build``` to build the project, and all it's dependencies.
 3. Type ```make run``` to run the project's executables.
 
+## Instructions for Development
+### Creating a Driver
+1. Navigate to `./src/drivers/` and create a directory named after the driver you wish to make (Refer to `./drivers/temperature_sensor` for an example).
+
+2. Inside of the newly created directory, create a `.c` and `.h` named after the driver you wish to make (Refer to `./drivers/temperature_sensor` for an example).
+3. Return to the root of the project directory and open `./Makefile`.
+4. change the `drivers_names` variable to include your driver's name.
