@@ -1,11 +1,18 @@
-# UWMedTechResolve-Onboarding-Project
+# UW Med-Tech Resolve Onboarding Project
+Written by Adrian Tarantino<br>
+GitHub: [@AdrianTheHacker](https://github.com/AdrianTheHacker)
 
-### Features
-1. Sensor Device Simulator
-  - Generates a pseudo-random temperature value.
+## Running the Project with Pre-Compiled Build
+The pre-compiled project build can be found inside of `./build/`. To run the pre-compiled build follow the steps below:
+1. Open your terminal from the project's root.
+2. Type ```./build/main.exe``` to run the project.
 
-2. Data Logger
-  - Writes sensor data in a JSON file every two seconds.
-  - Stores a history of all logs.
+## Fresh Compilation with Makefile
+To compile the program using `make` follow the steps listed below:
 
-3. 
+<b>Prerequisite</b>: Ensure `make` is installed and added to path ([Stack OverFlow - How can I install and use "make" in Windows?](https://stackoverflow.com/questions/32127524/how-can-i-install-and-use-make-in-windows)).
+1. Open you terminal from the project's root of chose and type ```make clean``` to delete all previous build files.
+
+2. Type ```make build``` to build the project, and all it's dependencies.
+3. Type ```make run``` to run the project's executables.
+
