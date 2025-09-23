@@ -1,6 +1,8 @@
 #ifndef TEMPERATURE_SENSOR_HEADER
 #define TEMPERATURE_SENSOR_HEADER
 
-double get_temperature_in_degrees_celsius();
+#include "file_options.h"
+
+extern const file_options_t temperature_sensor_file_options;
 
 #endif
