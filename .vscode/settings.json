@@ -5,8 +5,5 @@
   "[makefile]": {
     "editor.tabSize": 4,
     "editor.insertSpaces": false
-  },
-  "files.associations": {
-    "temperature_sensor.h": "c"
-  },
+  }
 }
