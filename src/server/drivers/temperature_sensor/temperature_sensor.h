@@ -1,0 +1,1 @@
+double get_temperature_in_degrees_celsius();
