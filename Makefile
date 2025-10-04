@@ -3,77 +3,72 @@ credits:
 	@echo "Programmed by Adrian Tarantino"
 	@echo "GitHub: AdrianTheHacker"
 
-source_path :=./src
-build_path :=./build
+utilities := $(foreach f, $(wildcard ./src/utilities/*/), $(shell basename $f))
+client_drivers := $(foreach f, $(wildcard ./src/client/drivers/*/), $(shell basename $f))
+server_drivers := $(foreach f, $(wildcard ./src/server/drivers/*/), $(shell basename $f))
 
-# Start Server
-server_path :=$(source_path)/server
-server_drivers_path :=$(server_path)/drivers
-server_driver_names :=temperature_sensor
+.PHONY: build
+.PHONY: build-client
+.PHONY: build-server
+.PHONY: run-client
+.PHONY: run-server
+.PHONY: clean
 
-server_build_path :=$(build_path)/server
-server_drivers_build_path :=$(server_build_path)/drivers
+build: build-client build-server
 
-.server_drivers_build_setup:
-	mkdir -p $(server_drivers_build_path)
+build-client:
+	@echo "Building Client Code"
+	@echo $(utilities)
+	@echo $(client_drivers)
 
-$(server_driver_names): .server_drivers_build_setup
-	@echo 'Building object file for: $@'
-	mkdir -p $(server_drivers_build_path)/$@
-	touch $(server_drivers_build_path)/$@/$@.o
-	cc -c $(server_drivers_path)/$@/$@.c -o $(server_drivers_build_path)/$@/$@.o
+	mkdir -p ./build/client/
 
-.PHONY: server-build
-server-build: $(server_driver_names)
-	echo "Hello, world"
-	cc -c $(server_path)/server.c -o $(server_build_path)/server.o
-	cc $(server_build_path)/server.o $(foreach f, $^, $(server_drivers_build_path)/$f/$f.o) $(foreach f, $^, -I $(server_drivers_path)/$f/) -o $(server_build_path)/server.exe -pthread
+	$(foreach f, $(utilities), mkdir --parent ./build/client/utilities/$f)
+	$(foreach f, $(utilities), touch ./build/client/utilities/$f/$f.o)
+	$(foreach f, $(utilities), cc -c ./src/utilities/$f/$f.c -o ./build/client/utilities/$f/$f.o)
 
-.PHONY: server-run
-server-run:
-	$(server_build_path)/server.exe
+	$(foreach f, $(client_drivers), mkdir --parent ./build/client/drivers/$f)
+	$(foreach f, $(client_drivers), touch ./build/client/drivers/$f/$f.o)
+	$(foreach f, $(client_drivers), cc -c ./src/client/drivers/$f/$f.c -o ./build/client/drivers/$f/$f.o)
 
-.PHONY: server
-server-clean:
-	rm -rf $(server_build_path)/*
+	cc -c ./src/client/client.c -o ./build/client/client.o
+	cc ./build/client/client.o \
+	$(foreach f, $(client_drivers), ./build/client/drivers/$f/$f.o) \
+	$(foreach f, $(utilities), ./build/client/utilities/$f/$f.o) \
+	$(foreach f, $(client_drivers),  -I ./src/client/drivers/$f/) \
+	$(foreach f, $(utilities), -I ./src/client/utilities/$f/) \
+	-o ./build/client/client.exe -pthread
 
-# End Server
+run-client:
+	./build/client/client.exe
 
-# Start Client
-client_path :=$(source_path)/client
-client_drivers_path :=$(client_path)/drivers
-client_driver_names :=
+build-server:
+	@echo "Building Server Code"
+	@echo $(utilities)
+	@echo $(server_drivers)
 
-client_build_path :=$(build_path)/client
-client_drivers_build_path :=$(client_build_path)/drivers
+	mkdir -p ./build/server/
 
-.client_drivers_build_setup:
-	mkdir -p $(client_drivers_build_path)
+	$(foreach f, $(utilities), mkdir --parent ./build/server/utilities/$f)
+	$(foreach f, $(utilities), touch ./build/server/utilities/$f/$f.o)
+	$(foreach f, $(utilities), cc -c ./src/utilities/$f/$f.c -o ./build/server/utilities/$f/$f.o)
 
-$(client_driver_names): .client_drivers_build_setup
-	@echo 'Building object file for: $@'
-	mkdir -p $(client_drivers_build_path)/$@
-	touch $(client_drivers_build_path)/$@/$@.o
-	cc -c $(client_drivers_path)/$@/$@.c -o $(client_drivers_build_path)/$@/$@.o
+	$(foreach f, $(server_drivers), mkdir --parent ./build/server/drivers/$f)
+	$(foreach f, $(server_drivers), touch ./build/server/drivers/$f/$f.o)
+	$(foreach f, $(server_drivers), cc -c ./src/server/drivers/$f/$f.c -o ./build/server/drivers/$f/$f.o)
 
-.PHONY: client-build
-client-build: $(client_driver_names)
-	echo "Hello, world"
-	cc -c $(client_path)/client.c -o $(client_build_path)/client.o
-	cc $(client_build_path)/client.o $(foreach f, $^, $(client_drivers_build_path)/$f/$f.o) $(foreach f, $^, -I $(client_drivers_path)/$f/) -o $(client_build_path)/client.exe -pthread
+	cc -c ./src/server/server.c -o ./build/server/server.o
+	cc ./build/server/server.o \
+	$(foreach f, $(server_drivers), ./build/server/drivers/$f/$f.o) \
+	$(foreach f, $(utilities), ./build/server/utilities/$f/$f.o) \
+	$(foreach f, $(server_drivers), -I ./src/server/drivers/$f/) \
+	$(foreach f, $(utilities), -I ./src/server/utilities/$f/) \
+	-o ./build/server/server.exe -pthread
 
-.PHONY: client-run
-client-run:
-	$(client_build_path)/client.exe
+run-server:
+	./build/server/server.exe
 
-.PHONY: client-clean
-clean-client:
-	rm -rf $(client_build_path)/*
-
-# End Client
-
-.PHONY: all-clean
-all-clean:
-	rm -rf $(build_path)/*
-	rm -rf $(build_path)/.[!.]*
-	rm -rf $(build_path)/..?*
+clean:
+	rm -rf ./build/*
+	rm -rf ./build/.[!.]*
+	rm -rf ./build/..?*
