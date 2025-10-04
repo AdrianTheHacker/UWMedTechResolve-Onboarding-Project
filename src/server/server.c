@@ -10,8 +10,12 @@
 #include "drivers/temperature_sensor/temperature_sensor.h"
 #include "../utilities/queue/queue.h"
 
+#define REQUEST_LENGTH 5
+#define DATA_PACKET_LENGTH 5
 #define handle_error(message) \
   do { perror(message); exit(EXIT_FAILURE); } while(0)
+
+#define DATA_NONEXISTENT_ERROR -51
 
 void *unix_socket_interface_thread_routine(void *state);
 void *temperature_sensor_simulation_thread_routine(void *state);
@@ -69,29 +73,28 @@ void *unix_socket_interface_thread_routine(void *state) {
   const char *get_request = "GET";
   const char *stop_request = "STOP";
 
-  char request_buffer[5];
-  double temperature_sensor_readings_buffer[5];
+  char request_buffer[REQUEST_LENGTH];
+  double data_packet_buffer[DATA_PACKET_LENGTH];
   
   while (1) {
-    if (read(peer_fd, request_buffer, 5) > 0) {
-      request_buffer[5] = '\0';
-      printf("Client Request: %s\n", request_buffer);
+    if (read(peer_fd, request_buffer, REQUEST_LENGTH) <= 0) continue;
+    request_buffer[REQUEST_LENGTH - 1] = '\0';
+    printf("Incoming Request: %s\n", request_buffer);
 
-      if (strncmp(request_buffer, "GET", sizeof(get_request)) == 0) {
+    if (strncmp(request_buffer, "GET", 3) == 0) {
+      pthread_mutex_lock(&mutex);
+      int queue_operation_result = queue_populate_buffer(&queue, data_packet_buffer, DATA_PACKET_LENGTH);
+      pthread_mutex_unlock(&mutex);
 
-        pthread_mutex_lock(&mutex);
-        if(queue_populate_buffer(&queue, temperature_sensor_readings_buffer, 5) == QUEUE_EMPTY_ERROR) {
-          pthread_mutex_unlock(&mutex);
-          continue;
-        }
-        pthread_mutex_unlock(&mutex);
-        
-        write(peer_fd, temperature_sensor_readings_buffer, sizeof(temperature_sensor_readings_buffer));
+      if (queue_operation_result == QUEUE_EMPTY_ERROR) {
+        for(int i = 0; i < DATA_PACKET_LENGTH; i++) { data_packet_buffer[i] = DATA_NONEXISTENT_ERROR; }
       }
-      
-      else if (strncmp(request_buffer, "STOP", sizeof(stop_request)) == 0) {
-        break;
-      }
+
+      write(peer_fd, data_packet_buffer, DATA_PACKET_LENGTH);
+    }
+
+    if (strncmp(request_buffer, "STOP", 4) == 0) {
+      break;
     }
   }
   
@@ -109,16 +112,13 @@ void *unix_socket_interface_thread_routine(void *state) {
 
 void *temperature_sensor_simulation_thread_routine(void *state) {
   while(1) {
-    for(int i = 0; i < 5; i++) {
+    double temperature_sensor_reading_in_celsius = get_temperature_in_degrees_celsius();
 
-      pthread_mutex_lock(&mutex);
-      if(queue_push(&queue, get_temperature_in_degrees_celsius()) == QUEUE_FULL_ERROR) {
-        pthread_mutex_lock(&mutex);
-        continue;
-      }
-      pthread_mutex_lock(&mutex);
-
-      usleep(500);
+    pthread_mutex_lock(&mutex);
+    if(queue_push(&queue, temperature_sensor_reading_in_celsius) == QUEUE_FULL_ERROR) {
+      printf("Queue full!!!\n");
     }
+
+    pthread_mutex_unlock(&mutex);
   }
 }
