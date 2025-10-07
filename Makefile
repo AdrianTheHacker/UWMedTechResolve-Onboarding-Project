@@ -8,6 +8,7 @@ client_drivers := $(foreach f, $(wildcard ./src/client/drivers/*/), $(shell base
 server_drivers := $(foreach f, $(wildcard ./src/server/drivers/*/), $(shell basename $f))
 
 .PHONY: build
+.PHONY: .build-origin
 .PHONY: build-client
 .PHONY: build-server
 .PHONY: build-database

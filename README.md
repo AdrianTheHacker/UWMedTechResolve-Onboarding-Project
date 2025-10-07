@@ -2,12 +2,6 @@
 Written by Adrian Tarantino<br>
 GitHub: [@AdrianTheHacker](https://github.com/AdrianTheHacker)
 
-## Running the Project with Pre-Compiled Build
-The pre-compiled project build can be found inside of `./build/`. To run the pre-compiled build follow the steps below:
-1. Open your terminal from the project's root.
-2. Type ```make run-server``` to run the server.
-3. In another terminal session, type ```make run-client``` to run the client.
-
 ## Running the Project from a Fresh Compilation
 To compile the program using `make` follow the steps listed below:
 
@@ -17,3 +11,5 @@ To compile the program using `make` follow the steps listed below:
 2. Type ```make build``` to build the project, and all it's dependencies.
 3. Type ```make run-server``` to run the project's server.
 4. In another terminal session, type ```make run-client``` to run the project's client.
+
+<i><b>Note</b>: Typing ```make clean``` will delete all build files.</i>
