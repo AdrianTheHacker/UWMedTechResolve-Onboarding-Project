@@ -27,9 +27,10 @@ void print_buffer(double *buffer, int buffer_length);
 
 queue_t queue;
 pthread_mutex_t mutex;
-int fd;
+FILE *fd;
 
 int main() {
+  fd = fopen("./database/sensor_log.txt", "a");
   queue_initialize(&queue);
   pthread_mutex_init(&mutex, NULL);
 
@@ -43,6 +44,7 @@ int main() {
   pthread_join(unix_socket_interface_thread, NULL);
   
   pthread_mutex_destroy(&mutex);
+  fclose(fd);
   return 0;
 }
 
@@ -99,7 +101,22 @@ void *unix_socket_interface_thread_routine(void *state) {
 
 void *file_handler_thread_routine(void *state) {
   while(1) {
-    usleep(1000);
+    double reading;
+
+    pthread_mutex_lock(&mutex);
+    int queue_status = queue_pop(&queue, &reading);
+    pthread_mutex_unlock(&mutex);
+
+    if (queue_status == QUEUE_EMPTY_ERROR) {
+      reading = -51;
+    }
+    
+    printf("Temperature Reading: %f Celsius\n", reading);
+
+    fflush(fd);
+    fprintf(fd, "Temperature Reading: %f Celsius\n", reading);
+
+    sleep(2);
   }
 }
 

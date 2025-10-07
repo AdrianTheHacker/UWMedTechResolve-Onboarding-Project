@@ -10,11 +10,12 @@ server_drivers := $(foreach f, $(wildcard ./src/server/drivers/*/), $(shell base
 .PHONY: build
 .PHONY: build-client
 .PHONY: build-server
+.PHONY: build-database
 .PHONY: run-client
 .PHONY: run-server
 .PHONY: clean
 
-build: build-client build-server
+build: build-client build-server build-database
 
 build-client:
 	@echo "Building Client Code"
@@ -68,7 +69,18 @@ build-server:
 run-server:
 	./build/server/server.exe
 
+build-database:
+	@echo "Building Database"
+
+	mkdir -p ./database/
+	touch ./database/sensor_log.txt
+
+
 clean:
 	rm -rf ./build/*
 	rm -rf ./build/.[!.]*
 	rm -rf ./build/..?*
+
+	rm -rf ./database/*
+	rm -rf ./database/.[!.]*
+	rm -rf ./database/..?*
